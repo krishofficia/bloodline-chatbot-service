@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial.distance import cosine
 from flask import Flask, request, jsonify
 import os
 
@@ -33,7 +33,11 @@ def chatbot_answer(user_question):
 
     # Embed user question
     user_emb = model.encode([user_question])
-    sim = cosine_similarity(user_emb, embeddings)[0]
+    # Calculate cosine similarities using scipy
+    sim = []
+    for embedding in embeddings:
+        sim.append(1 - cosine(user_emb[0], embedding))
+    sim = np.array(sim)
 
     top_indices = sim.argsort()[-5:][::-1]  # top 5 matches
     top_scores = sim[top_indices]
