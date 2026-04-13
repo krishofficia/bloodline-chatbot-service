@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import csv
 from sentence_transformers import SentenceTransformer
 from flask import Flask, request, jsonify
 import os
@@ -11,15 +11,26 @@ def cosine_similarity_manual(a, b):
     norm_b = np.linalg.norm(b)
     return dot_product / (norm_a * norm_b)
 
+def read_csv_simple(filename):
+    """Read CSV file without pandas"""
+    questions = []
+    answers = []
+    
+    with open(filename, 'r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            questions.append(row['question'])
+            answers.append(row['answer'])
+    
+    return questions, answers
+
 app = Flask(__name__)
 
 # Load dataset and model
 print("Loading chatbot model and data...")
 
 # Load the dataset
-df = pd.read_csv("blood_donation_1000_qa.csv")
-questions = df["question"].tolist()
-answers = df["answer"].tolist()
+questions, answers = read_csv_simple("blood_donation_1000_qa.csv")
 
 # Load the sentence transformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
