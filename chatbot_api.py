@@ -1,9 +1,15 @@
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-from scipy.spatial.distance import cosine
 from flask import Flask, request, jsonify
 import os
+
+def cosine_similarity_manual(a, b):
+    """Calculate cosine similarity manually using numpy"""
+    dot_product = np.dot(a, b)
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
+    return dot_product / (norm_a * norm_b)
 
 app = Flask(__name__)
 
@@ -33,10 +39,10 @@ def chatbot_answer(user_question):
 
     # Embed user question
     user_emb = model.encode([user_question])
-    # Calculate cosine similarities using scipy
+    # Calculate cosine similarities manually
     sim = []
     for embedding in embeddings:
-        sim.append(1 - cosine(user_emb[0], embedding))
+        sim.append(cosine_similarity_manual(user_emb[0], embedding))
     sim = np.array(sim)
 
     top_indices = sim.argsort()[-5:][::-1]  # top 5 matches
